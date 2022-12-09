@@ -109,7 +109,7 @@ var VueReactivity = (() => {
       let oldValue = target[key];
       let result = Reflect.set(target, key, value, receiver);
       if (oldValue !== value) {
-        trigger(target, "set", key, value, oldValue);
+        trigger(target, "set", key);
       }
       return result;
     }
