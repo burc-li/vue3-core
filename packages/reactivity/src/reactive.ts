@@ -2,11 +2,11 @@ import { isObject } from '@vue/shared'
 import { mutableHandlers, ReactiveFlags } from './baseHandler'
 
 // key只能是对象；弱引用，更有效的垃圾回收、释放内存 - https://www.zhangxinxu.com/wordpress/2021/08/js-weakmap-es6/
-const reactiveMap = new WeakMap() 
+const reactiveMap = new WeakMap()
 
 /**
- * 
- * @desc 将数据转化成响应式的数据 
+ *
+ * @desc 将数据转化成响应式的数据
  * @issue1 只能做对象的代理，不是对象，return
  * @issue2 代理对象被再次代理 可以直接返回
  * @issue3 同一个对象代理多次，返回同一个代理
@@ -54,6 +54,6 @@ export function reactive(target) {
 //         return Reflect.set(target,key,value,receiver);
 //     }
 // });
-// proxy.alias; 
+// proxy.alias;
 // 去alais上取了值时，也去了name，当时没有监控到name
 // 我在页面中使用了alias对应的值，稍后name变化了 要重新渲染么？

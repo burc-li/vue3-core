@@ -5,9 +5,25 @@ export let activeEffect = undefined
  * @issue2 activeEffect 只在effect运行时执行track保存
  * @issue3 parent 解决effect嵌套问题
  * @issue4 双向记录  一个属性对应多个effect，一个effect对应多个属性
- * @issue5 避免由run触发trigger
+ * @issue5 避免由run触发trigger，递归循环
+ * @issue6 分支切换 cleanupEffect
+ * @issue7 分支切换 死循环，set循环中，先delete再add，会出现死循环
  */
+
+// @issue6
+// 每次执行effect的时候清理一遍依赖，再重新收集，双向清理
+function cleanupEffect(effect) {
+  // deps 里面装的是name对应的effect, age对应的effect
+  const { deps } = effect
+  for (let i = 0; i < deps.length; i++) {
+    // 解除effect，重新依赖收集
+    deps[i].delete(effect)
+  }
+  effect.deps.length = 0
+}
+
 export class ReactiveEffect {
+  // @issue3
   // 这里表示在实例上新增了parent属性，记录父级effect
   public parent = null
   // 记录effect依赖的属性
@@ -29,8 +45,10 @@ export class ReactiveEffect {
       // 记录父级effect
       this.parent = activeEffect
       activeEffect = this
+      // 这里我们需要在执行用户函数之前将之前收集的内容清空
+      cleanupEffect(this) // @issue6
       // 当稍后调用取值操作的时候 就可以获取到这个全局的activeEffect了
-      return this.fn()
+      return this.fn() // @issue1
     } finally {
       // 还原父级effect
       activeEffect = this.parent
@@ -51,7 +69,7 @@ export function effect(fn) {
 const targetMap = new WeakMap()
 export function track(target, type, key) {
   // 我们只想在我们有activeEffect时运行这段代码
-  if (!activeEffect) return
+  if (!activeEffect) return // @issue2
   let depsMap = targetMap.get(target) // 第一次没有
   if (!depsMap) {
     targetMap.set(target, (depsMap = new Map()))
@@ -69,6 +87,7 @@ export function trackEffects(dep) {
     let shouldTrack = !dep.has(activeEffect) // 去重了
     if (shouldTrack) {
       dep.add(activeEffect)
+      // @issue4
       // 存放的是属性对应的set
       activeEffect.deps.push(dep) // 让effect记录住对应的dep， 稍后清理的时候会用到
     }
@@ -87,14 +106,18 @@ export function trigger(target, type, key) {
   }
 }
 export function triggerEffects(effects) {
+  // 先拷贝，防止死循环
+  effects = new Set(effects) // @issue7
   effects.forEach(effect => {
     // 我们在执行effect的时候 又要执行自己，那我们需要屏蔽掉，不要无限调用，【避免由activeEffect触发trigger，再次触发当前effect。 activeEffect -> fn -> set -> trigger -> 当前effect】
     if (effect !== activeEffect) {
+      // @issue5
       effect.run() // 否则默认刷新视图
     }
   })
 }
 
+// @issue3
 // 解决effect嵌套问题----栈方式------------------------vue2 vue3.0初始版本
 // 运行effect，此effect入栈，运行完毕，最后一个effect出栈，属性关联栈中的最后一个effect
 // [e1] -> [e1,e2] -> [e1]
@@ -125,6 +148,15 @@ export function triggerEffects(effects) {
 //   })
 // })
 
+// @issue7
+// let s = new Set([1])
+// s.forEach((item,idx) => {
+//     console.log(item,idx)
+//     s.delete(1)
+//     s.add(1)
+// })
+
+// 流程
 // 1) 我们先搞了一个响应式对象 new Proxy
 // 2) effect 默认数据变化要能更新，我们先将正在执行的effect作为全局变量，渲染（取值）， 我们在get方法中进行依赖收集
 // 3) weakmap (对象 ： map(属性：set（effect）))
