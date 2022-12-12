@@ -16,7 +16,7 @@
 
       // shallowReactive,readonly,shallowReadonly 作业自己实现下，都是基于reactive的
       const { effect, reactive } = VueReactivity
-      const data = { name: 'zf', age: 13, address: { num: 517 } }
+      const data = { name: '柏成', age: 13, address: { num: 517 } }
       const state = reactive(data)
       // vue3中的代理都是用proxy来解决的
 
@@ -29,7 +29,7 @@
 
       // 稍后name和age变化会重新执行effect函数
       setTimeout(() => {
-        state.age = 14
+        state.age = 18
       }, 1000)
     </script>
   </body>

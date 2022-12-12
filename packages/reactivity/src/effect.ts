@@ -8,6 +8,7 @@ export let activeEffect = undefined
  * @issue5 避免由run触发trigger，递归循环
  * @issue6 分支切换 cleanupEffect
  * @issue7 分支切换 死循环，set循环中，先delete再add，会出现死循环
+ * @issue8 自定义调度器 类似Vue3中的effectScope stop 和 scheduler
  */
 
 // @issue6
@@ -32,7 +33,7 @@ export class ReactiveEffect {
   public active = true
 
   // 用户传递的参数也会传递到this上 this.fn = fn
-  constructor(public fn) {}
+  constructor(public fn, public scheduler) {} // @issue8 - scheduler
 
   // run就是执行effect
   run() {
@@ -54,12 +55,26 @@ export class ReactiveEffect {
       activeEffect = this.parent
     }
   }
+  // @issue8 - stop
+  stop() {
+    if (this.active) {
+      this.active = false
+      cleanupEffect(this) // 停止effect的收集
+    }
+  }
 }
 
-export function effect(fn) {
+export function effect(fn, options: any = {}) {
   // 这里fn可以根据状态变化 重新执行， effect可以嵌套着写
-  const _effect = new ReactiveEffect(fn) // 创建响应式的effect
+  const _effect = new ReactiveEffect(fn, options.scheduler) // 创建响应式的effect @issue8 - scheduler
   _effect.run() // 默认先执行一次
+
+  // @issue8 - stop
+  // 绑定this，run方法内的this指向_effect，若不绑定，这样调用run方法时，runner()，则指向undefined
+  const runner = _effect.run.bind(_effect)
+  // 将effect挂载到runner函数上，调用stop方式时可以这样调用 runner.effect.stop()
+  runner.effect = _effect
+  return runner
 }
 
 // 对象 某个属性 -》 多个effect
@@ -106,13 +121,18 @@ export function trigger(target, type, key) {
   }
 }
 export function triggerEffects(effects) {
-  // 先拷贝，防止死循环
+  // 先拷贝，防止死循环，new Set 后产生一个新的Set
   effects = new Set(effects) // @issue7
   effects.forEach(effect => {
     // 我们在执行effect的时候 又要执行自己，那我们需要屏蔽掉，不要无限调用，【避免由activeEffect触发trigger，再次触发当前effect。 activeEffect -> fn -> set -> trigger -> 当前effect】
+    // @issue5
     if (effect !== activeEffect) {
-      // @issue5
-      effect.run() // 否则默认刷新视图
+      // @issue8 - scheduler
+      if (effect.scheduler) {
+        effect.scheduler() // 如果用户传入了调度函数，则执行调度函数
+      } else {
+        effect.run() // 否则默认刷新视图
+      }
     }
   })
 }
