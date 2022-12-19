@@ -1,15 +1,16 @@
-export let activeEffect = undefined
-
 /**
  * @issue1 effect默认会先执行一次
  * @issue2 activeEffect 只在effect运行时执行track保存
  * @issue3 parent 解决effect嵌套问题
- * @issue4 双向记录  一个属性对应多个effect，一个effect对应多个属性
+ * @issue4 双向记录  一个属性对应多个effect，一个effect对应多个属性 √
  * @issue5 避免由run触发trigger，递归循环
  * @issue6 分支切换 cleanupEffect
  * @issue7 分支切换 死循环，set循环中，先delete再add，会出现死循环
  * @issue8 自定义调度器 类似Vue3中的effectScope stop 和 scheduler
  */
+
+// 当前正在执行的effect
+export let activeEffect = undefined
 
 // @issue6
 // 每次执行effect的时候清理一遍依赖，再重新收集，双向清理

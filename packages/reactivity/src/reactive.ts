@@ -10,6 +10,7 @@ const reactiveMap = new WeakMap()
  * @issue1 只能做对象的代理，不是对象，return
  * @issue2 代理对象被再次代理 可以直接返回
  * @issue3 同一个对象代理多次，返回同一个代理
+ * @issue4 嵌套对象深度代理
  */
 export function reactive(target) {
   // issue1
