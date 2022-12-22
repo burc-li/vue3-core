@@ -1,6 +1,12 @@
 import { isObject } from '@vue/shared'
 import { mutableHandlers, ReactiveFlags } from './baseHandler'
 
+// 判断是否是响应式对象
+// 此方法兼容 null undefined string number boolean array object reactive([]) reactive({})所有情况
+export function isReactive(value) {
+  return !!(value && value[ReactiveFlags.IS_REACTIVE])
+}
+
 // key只能是对象；弱引用，更有效的垃圾回收、释放内存 - https://www.zhangxinxu.com/wordpress/2021/08/js-weakmap-es6/
 const reactiveMap = new WeakMap()
 

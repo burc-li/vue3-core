@@ -2,8 +2,9 @@ import { isFunction } from '@vue/shared'
 import { ReactiveEffect, trackEffects, triggerEffects } from './effect'
 
 /**
- * @issue1 缓存，只要依赖的变量值没有发生变化，就取缓存中的值
- * @issue2 嵌套effect，firname -> fullName -> effect
+ * @issue1 computed参数兼容只传getter方法和handler对象
+ * @issue2 缓存，只要依赖的变量值没有发生变化，就取缓存中的值
+ * @issue3 嵌套effect，firname -> fullName -> effect
  */
 class ComputedRefImpl {
   public effect
@@ -18,15 +19,17 @@ class ComputedRefImpl {
       // 稍后依赖的属性变化会执行此调度函数
       if (!this._dirty) {
         this._dirty = true
-        // 实现一个触发更新
+        // 实现一个触发更新 @issue3
         triggerEffects(this.dep)
       }
     })
   }
-  // 类中的属性访问器 底层就是Object.defineProperty
+  // 类中的访问器属性 底层就是Object.defineProperty
+  // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/get
   get value() {
-    // 做依赖收集
+    // 做依赖收集 @issue3
     trackEffects(this.dep)
+    // @issue2
     if (this._dirty) {
       // 说明这个值是脏的
       this._dirty = false
@@ -44,6 +47,7 @@ export const computed = getterOrOptions => {
 
   let getter
   let setter
+  // @issue1
   if (onlyGetter) {
     getter = getterOrOptions
     setter = () => {
