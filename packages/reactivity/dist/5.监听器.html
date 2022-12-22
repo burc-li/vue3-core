@@ -7,7 +7,7 @@
     <title>Document</title>
   </head>
   <body>
-    <script src="../../../node_modules/vue/dist//vue.global.js"></script>
+    <!-- <script src="../../../node_modules/vue/dist//vue.global.js"></script> -->
     <script src="./reactivity.global.js"></script>
     <div id="app"></div>
     <script>
@@ -21,14 +21,21 @@
       // 1.这种方式就是监控数据变化，数据变化了就重新执行
       // 2.这里可以去监控一个函数，函数的返回值就是老值，更新后获取新值
       watch(
+        state.address,
+        (newValue, oldValue) => {
+          console.log('>>>_1', newValue, oldValue)
+        },
+        { immediate: true },
+      )
+      watch(
         () => state.address.num,
         (newValue, oldValue) => {
-          console.log(newValue, oldValue)
+          console.log('>>>_2', newValue, oldValue)
         },
+        { immediate: true },
       )
 
       setTimeout(() => {
-        state.name = '柏成'
         state.address.num = 123
       }, 100)
     </script>

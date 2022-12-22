@@ -225,7 +225,7 @@ var VueReactivity = (() => {
     }
     return value;
   }
-  function watch(source, cb) {
+  function watch(source, cb, { immediate } = {}) {
     let getter;
     if (isReactive(source)) {
       getter = () => traversal(source);
@@ -247,6 +247,9 @@ var VueReactivity = (() => {
       oldValue = newValue;
     };
     const effect2 = new ReactiveEffect(getter, scheduler);
+    if (immediate) {
+      scheduler();
+    }
     oldValue = effect2.run();
   }
   return __toCommonJS(src_exports);
