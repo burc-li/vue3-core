@@ -12,7 +12,7 @@
     <script src="./reactivity.global.js"></script>
     <script>
       // const { ref, effect, computed, reactive } = Vue // 我们reactive他支持一个对象类型
-      const { ref, effect, reactive } = VueReactivity // 我们reactive他支持一个对象类型
+      const { ref, shallowRef, effect, reactive } = VueReactivity // 我们reactive他支持一个对象类型
 
       const flag = ref(false)
 
@@ -22,6 +22,17 @@
 
       setTimeout(() => {
         flag.value = !flag.value
+      }, 1000)
+
+      const state = shallowRef({ count: 1 })
+      effect(() => {
+        app.innerHTML = app.innerHTML + '。数量：' + state.value.count
+      })
+      setTimeout(() => {
+        // 不会触发更改
+        // state.value.count = 2
+        // 会触发更改
+        state.value = { count: 2 }
       }, 1000)
     </script>
   </body>

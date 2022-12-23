@@ -17,8 +17,9 @@ class RefImpl {
   // 存储effect
   public dep = new Set()
   public _value
-  constructor(public rawValue) {
-    this._value = toReactive(rawValue)
+  constructor(public rawValue, public _shallow) {
+    // @issue1
+    this._value = _shallow ? rawValue : toReactive(rawValue)
   }
   get value() {
     // 取值的时候收集依赖
@@ -28,7 +29,8 @@ class RefImpl {
   set value(newValue) {
     // 新旧值不相等
     if (newValue !== this.rawValue) {
-      this._value = toReactive(newValue)
+      // @issue1
+      this._value = this._shallow ? newValue : toReactive(newValue)
       this.rawValue = newValue
       // 设置值的时候触发依赖
       triggerEffects(this.dep)
@@ -38,7 +40,12 @@ class RefImpl {
 
 // 接受一个内部值，返回一个响应式的、可更改的 ref 对象，此对象只有一个指向其内部值的属性 .value。
 export function ref(value) {
-  return new RefImpl(value)
+  return new RefImpl(value, false)
+}
+
+// 创建浅ref 不会进行深层代理
+export function shallowRef(value) {
+  return new RefImpl(value, true)
 }
 
 class ObjectRefImpl {
@@ -68,12 +75,15 @@ export function toRefs(object) {
   return result
 }
 
+// 自动脱ref
 export function proxyRefs(object) {
   return new Proxy(object, {
+    // 代理的思想，如果是ref 则取ref.value
     get(target, key, recevier) {
       let r = Reflect.get(target, key, recevier)
       return r.__v_isRef ? r.value : r
     },
+    // 设置的时候如果是ref,则给ref.value赋值
     set(target, key, value, recevier) {
       let oldValue = target[key]
       if (oldValue.__v_isRef) {

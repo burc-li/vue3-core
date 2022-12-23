@@ -25,6 +25,7 @@ var VueReactivity = (() => {
     proxyRefs: () => proxyRefs,
     reactive: () => reactive,
     ref: () => ref,
+    shallowRef: () => shallowRef,
     toRef: () => toRef,
     toRefs: () => toRefs,
     watch: () => watch
@@ -262,11 +263,12 @@ var VueReactivity = (() => {
     return isObject(value) ? reactive(value) : value;
   }
   var RefImpl = class {
-    constructor(rawValue) {
+    constructor(rawValue, _shallow) {
       this.rawValue = rawValue;
+      this._shallow = _shallow;
       this.__v_isRef = true;
       this.dep = /* @__PURE__ */ new Set();
-      this._value = toReactive(rawValue);
+      this._value = _shallow ? rawValue : toReactive(rawValue);
     }
     get value() {
       trackEffects(this.dep);
@@ -274,14 +276,17 @@ var VueReactivity = (() => {
     }
     set value(newValue) {
       if (newValue !== this.rawValue) {
-        this._value = toReactive(newValue);
+        this._value = this._shallow ? newValue : toReactive(newValue);
         this.rawValue = newValue;
         triggerEffects(this.dep);
       }
     }
   };
   function ref(value) {
-    return new RefImpl(value);
+    return new RefImpl(value, false);
+  }
+  function shallowRef(value) {
+    return new RefImpl(value, true);
   }
   var ObjectRefImpl = class {
     constructor(object, key) {
