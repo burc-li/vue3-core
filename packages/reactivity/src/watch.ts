@@ -31,6 +31,7 @@ function traversal(value, set = new Set()) {
 
 /**
  * @desc watch
+ * @issue1 考虑对象中有循环引用的问题
  * @issue2 兼容数据源为响应式对象和getter函数的情况
  * @issue3 immediate 立即执行
  * @issue4 onCleanup：用于注册副作用清理的回调函数。该回调函数会在副作用下一次重新执行前调用，可以用来清除无效的副作用，例如等待中的异步请求
