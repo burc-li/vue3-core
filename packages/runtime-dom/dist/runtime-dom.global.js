@@ -25,15 +25,6 @@ var VueRuntimeDOM = (() => {
     render: () => render
   });
 
-  // packages/runtime-core/src/renderer.ts
-  function createRenderer(renderOptions2) {
-    const render2 = (vnode, container) => {
-    };
-    return {
-      render: render2
-    };
-  }
-
   // packages/shared/src/index.ts
   var isObject = function(value) {
     return typeof value === "object" && value !== null;
@@ -43,8 +34,67 @@ var VueRuntimeDOM = (() => {
   };
   var isArray = Array.isArray;
 
+  // packages/runtime-core/src/renderer.ts
+  function createRenderer(renderOptions2) {
+    let {
+      insert: hostInsert,
+      remove: hostRemove,
+      setElementText: hostSetElementText,
+      setText: hostSetText,
+      parentNode: hostParentNode,
+      nextSibling: hostNextSibling,
+      createElement: hostCreateElement,
+      createText: hostCreateText,
+      patchProp: hostPatchProp
+    } = renderOptions2;
+    const mountChildren = (container, children) => {
+      for (let i = 0; i < children.length; i++) {
+        patch(null, children[i], container);
+      }
+    };
+    const mountElement = (vnode, container) => {
+      const { type, props, shapeFlag } = vnode;
+      let el = vnode.el = hostCreateElement(type);
+      if (props) {
+        for (const key in props) {
+          hostPatchProp(el, key, null, props[key]);
+        }
+      }
+      if (shapeFlag & 8 /* TEXT_CHILDREN */) {
+        hostSetElementText(el, vnode.children);
+      } else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+        mountChildren(el, vnode.children);
+      }
+      hostInsert(el, container);
+    };
+    const patch = (n1, n2, container) => {
+      if (n1 == n2) {
+        return;
+      }
+      if (n1 == null) {
+        mountElement(n2, container);
+      } else {
+      }
+    };
+    const unmount = (vnode) => {
+      hostRemove(vnode.el);
+    };
+    const render2 = (vnode, container) => {
+      if (vnode == null) {
+        if (container._vnode) {
+          unmount(container._vnode);
+        }
+      } else {
+        patch(container._vnode || null, vnode, container);
+      }
+      container._vnode = vnode;
+    };
+    return {
+      render: render2
+    };
+  }
+
   // packages/runtime-core/src/vnode.ts
-  var Text = Symbol("Text");
   function isVnode(value) {
     return !!(value && value.__v_isVnode);
   }

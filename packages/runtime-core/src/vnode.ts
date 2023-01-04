@@ -1,15 +1,8 @@
 import { isArray, isString, ShapeFlags } from '@vue/shared'
 
-export const Text = Symbol('Text')
-
 // 判断是否是虚拟节点
 export function isVnode(value) {
   return !!(value && value.__v_isVnode)
-}
-
-// 判断两个虚拟节点是否是相同节点
-export function isSameVnode(n1, n2) {
-  return n1.type === n2.type && n1.key === n2.key
 }
 
 // 虚拟节点有很多：组件的、元素的、文本的   h('h1')、h('h1','hello')、h('h1',[h('span')])
