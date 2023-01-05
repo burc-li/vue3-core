@@ -14,7 +14,7 @@
     <script>
       // let { createRenderer, h, render } = VueRuntimeDOM
       // let { createRenderer, h, render } = Vue
-      let { createRenderer, h, render } = VueRuntimeDOM
+      let { createRenderer, h, render, Text } = VueRuntimeDOM
 
       // 渲染渲染的是虚拟dom
       // let renderer = createRenderer({
@@ -36,10 +36,10 @@
 
       // h方法是给用户来用的 具备着多样性
       // render(h('h1', 'hello'), document.getElementById('app'))
-      render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
-      // render(h('h1', [h('span', 'I'), h('span', 'LOVE'), h('span', 'YOU'), '!']), document.getElementById('app'))
+      // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      render(h('h1', [h('span', 'I'), h('span', 'LOVE'), h('span', 'YOU'), '!']), document.getElementById('app'))
       // render(h('h1', null, '文本'), document.getElementById('app'))
-      console.log(document.getElementById('app')._vnode)
+      // render(h(Text, null, '文本'), document.getElementById('app'))
       // render(null, document.getElementById('app'))
 
       // render(

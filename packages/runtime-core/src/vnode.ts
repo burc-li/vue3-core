@@ -1,4 +1,5 @@
 import { isArray, isString, ShapeFlags } from '@vue/shared'
+export const Text = Symbol('Text')
 
 // 判断是否是虚拟节点
 export function isVnode(value) {

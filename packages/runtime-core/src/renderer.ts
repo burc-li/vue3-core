@@ -1,4 +1,5 @@
-import { ShapeFlags } from '@vue/shared'
+import { ShapeFlags, isString } from '@vue/shared'
+import { Text, createVnode } from './vnode'
 
 export function createRenderer(renderOptions) {
   let {
@@ -14,10 +15,22 @@ export function createRenderer(renderOptions) {
     patchProp: hostPatchProp,
   } = renderOptions
 
+  // children[i] 若是字符串，则转换为虚拟DOM；若是虚拟DOM，则不做处理直接返回
+  const normalize = (children, i) => {
+    if (isString(children[i])) {
+      let vnode = createVnode(Text, null, children[i])
+      children[i] = vnode
+    }
+    return children[i]
+  }
+
   // 递归初始化子节点
+  // children 中的每一项都是一个虚拟DOM
   const mountChildren = (container, children) => {
     for (let i = 0; i < children.length; i++) {
-      patch(null, children[i], container)
+      // 处理children[i]，将字符转转化为虚拟DOM
+      let child = normalize(children, i)
+      patch(null, child, container)
     }
   }
 
@@ -46,6 +59,15 @@ export function createRenderer(renderOptions) {
     hostInsert(el, container)
   }
 
+  // 初始化文本
+  const processText = (n1, n2, container) => {
+    if (n1 === null) {
+      const el = (n2.el = hostCreateText(n2.children))
+      hostInsert(el, container)
+    } else {
+    }
+  }
+
   //  核心的patch方法，包括初始化DOM 和 diff算法
   const patch = (n1, n2, container) => {
     if (n1 == n2) {
@@ -53,8 +75,17 @@ export function createRenderer(renderOptions) {
     }
 
     if (n1 == null) {
-      // 初始化DOM
-      mountElement(n2, container)
+      const { type, shapeFlag } = n2
+      switch (type) {
+        case Text:
+          processText(n1, n2, container)
+          break
+        default:
+          if (shapeFlag & ShapeFlags.ELEMENT) {
+            // 初始化DOM
+            mountElement(n2, container)
+          }
+      }
     } else {
       // diff算法
     }
