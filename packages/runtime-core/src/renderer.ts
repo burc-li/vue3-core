@@ -66,6 +66,11 @@ export function createRenderer(renderOptions) {
       const el = (n2.el = hostCreateText(n2.children))
       hostInsert(el, container)
     } else {
+      // patch文本，文本的内容变化了，我可以复用老的节点
+      const el = (n2.el = n1.el)
+      if (n1.children !== n2.children) {
+        hostSetText(el, n2.children) // 文本的更新
+      }
     }
   }
 
@@ -75,7 +80,36 @@ export function createRenderer(renderOptions) {
       // 初始化元素
       mountElement(n2, container)
     } else {
+      // patch元素
+      patchElement(n1, n2)
     }
+  }
+
+  // 对比属性打补丁
+  const patchProps = (oldProps, newProps, el) => {
+    for (let key in newProps) {
+      // 新的里面有，直接用新的盖掉即可
+      hostPatchProp(el, key, oldProps[key], newProps[key])
+    }
+    for (let key in oldProps) {
+      // 如果老的里面有新的没有，则是删除
+      if (newProps[key] == null) {
+        hostPatchProp(el, key, oldProps[key], undefined)
+      }
+    }
+  }
+  const patchChildren = (n1, n2, el) => {
+    // 核心Diff算法
+  }
+
+  // 对比元素打补丁，先复用节点、再比较属性、再比较儿子
+  const patchElement = (n1, n2) => {
+    let el = (n2.el = n1.el)
+    let oldProps = n1.props || {} // 对象
+    let newProps = n2.props || {} // 对象
+
+    patchProps(oldProps, newProps, el)
+    patchChildren(n1, n2, el)
   }
 
   //  核心的patch方法，包括初始化DOM 和 diff算法

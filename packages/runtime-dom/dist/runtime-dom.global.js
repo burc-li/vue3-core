@@ -116,13 +116,37 @@ var VueRuntimeDOM = (() => {
         const el = n2.el = hostCreateText(n2.children);
         hostInsert(el, container);
       } else {
+        const el = n2.el = n1.el;
+        if (n1.children !== n2.children) {
+          hostSetText(el, n2.children);
+        }
       }
     };
     const processElement = (n1, n2, container) => {
       if (n1 === null) {
         mountElement(n2, container);
       } else {
+        patchElement(n1, n2);
       }
+    };
+    const patchProps = (oldProps, newProps, el) => {
+      for (let key in newProps) {
+        hostPatchProp(el, key, oldProps[key], newProps[key]);
+      }
+      for (let key in oldProps) {
+        if (newProps[key] == null) {
+          hostPatchProp(el, key, oldProps[key], void 0);
+        }
+      }
+    };
+    const patchChildren = (n1, n2, el) => {
+    };
+    const patchElement = (n1, n2) => {
+      let el = n2.el = n1.el;
+      let oldProps = n1.props || {};
+      let newProps = n2.props || {};
+      patchProps(oldProps, newProps, el);
+      patchChildren(n1, n2, el);
     };
     const patch = (n1, n2, container) => {
       if (n1 == n2)

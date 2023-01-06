@@ -43,7 +43,8 @@
       // render(null, document.getElementById('app'))
 
       // 前后元素不一致
-      render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      render(h(Text, 'hello'), document.getElementById('app'))
+      // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
       setTimeout(() => {
         render(h(Text, 'hi'), document.getElementById('app'))
         // render(h('h2', 'hi'), document.getElementById('app'))
