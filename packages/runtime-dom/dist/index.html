@@ -37,10 +37,18 @@
       // h方法是给用户来用的 具备着多样性
       // render(h('h1', 'hello'), document.getElementById('app'))
       // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
-      render(h('h1', [h('span', 'I'), h('span', 'LOVE'), h('span', 'YOU'), '!']), document.getElementById('app'))
+      // render(h('h1', [h('span', 'I'), h('span', 'LOVE'), h('span', 'YOU'), '!']), document.getElementById('app'))
       // render(h('h1', null, '文本'), document.getElementById('app'))
       // render(h(Text, null, '文本'), document.getElementById('app'))
       // render(null, document.getElementById('app'))
+
+      // 前后元素不一致
+      render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      setTimeout(() => {
+        render(h(Text, 'hi'), document.getElementById('app'))
+        // render(h('h2', 'hi'), document.getElementById('app'))
+        // render(h('h1', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+      }, 1000)
 
       // render(
       //   h('h1', { style: {} }, [

@@ -1,5 +1,5 @@
 import { ShapeFlags, isString } from '@vue/shared'
-import { Text, createVnode } from './vnode'
+import { Text, isSameVnode, createVnode } from './vnode'
 
 export function createRenderer(renderOptions) {
   let {
@@ -59,35 +59,44 @@ export function createRenderer(renderOptions) {
     hostInsert(el, container)
   }
 
-  // 初始化文本
+  // 处理文本，初始化文本和patch文本
   const processText = (n1, n2, container) => {
     if (n1 === null) {
+      // 初始化文本
       const el = (n2.el = hostCreateText(n2.children))
       hostInsert(el, container)
     } else {
     }
   }
 
+  // 处理元素，初始化元素和patch元素
+  const processElement = (n1, n2, container) => {
+    if (n1 === null) {
+      // 初始化元素
+      mountElement(n2, container)
+    } else {
+    }
+  }
+
   //  核心的patch方法，包括初始化DOM 和 diff算法
   const patch = (n1, n2, container) => {
-    if (n1 == n2) {
-      return
+    if (n1 == n2) return
+
+    // 判断两个元素是否相同，不相同卸载在添加
+    if (n1 && !isSameVnode(n1, n2)) {
+      unmount(n1) // 删除老的
+      n1 = null
     }
 
-    if (n1 == null) {
-      const { type, shapeFlag } = n2
-      switch (type) {
-        case Text:
-          processText(n1, n2, container)
-          break
-        default:
-          if (shapeFlag & ShapeFlags.ELEMENT) {
-            // 初始化DOM
-            mountElement(n2, container)
-          }
-      }
-    } else {
-      // diff算法
+    const { type, shapeFlag } = n2
+    switch (type) {
+      case Text:
+        processText(n1, n2, container)
+        break
+      default:
+        if (shapeFlag & ShapeFlags.ELEMENT) {
+          processElement(n1, n2, container)
+        }
     }
   }
 
@@ -113,3 +122,7 @@ export function createRenderer(renderOptions) {
     render,
   }
 }
+
+// 1) 更新的逻辑思考：
+// - 如果前后元素不一致，删除老节点 添加新节点
+// - 如果前后元素一致， 复用节点； 再比较两个元素的属性和孩子节点

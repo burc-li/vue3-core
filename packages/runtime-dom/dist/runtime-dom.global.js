@@ -24,6 +24,7 @@ var VueRuntimeDOM = (() => {
     createRenderer: () => createRenderer,
     createVnode: () => createVnode,
     h: () => h,
+    isSameVnode: () => isSameVnode,
     isVnode: () => isVnode,
     render: () => render
   });
@@ -41,6 +42,9 @@ var VueRuntimeDOM = (() => {
   var Text = Symbol("Text");
   function isVnode(value) {
     return !!(value && value.__v_isVnode);
+  }
+  function isSameVnode(n1, n2) {
+    return n1.type === n2.type && n1.key === n2.key;
   }
   function createVnode(type, props, children = null) {
     let shapeFlag = isString(type) ? 1 /* ELEMENT */ : 0;
@@ -114,22 +118,28 @@ var VueRuntimeDOM = (() => {
       } else {
       }
     };
-    const patch = (n1, n2, container) => {
-      if (n1 == n2) {
-        return;
-      }
-      if (n1 == null) {
-        const { type, shapeFlag } = n2;
-        switch (type) {
-          case Text:
-            processText(n1, n2, container);
-            break;
-          default:
-            if (shapeFlag & 1 /* ELEMENT */) {
-              mountElement(n2, container);
-            }
-        }
+    const processElement = (n1, n2, container) => {
+      if (n1 === null) {
+        mountElement(n2, container);
       } else {
+      }
+    };
+    const patch = (n1, n2, container) => {
+      if (n1 == n2)
+        return;
+      if (n1 && !isSameVnode(n1, n2)) {
+        unmount(n1);
+        n1 = null;
+      }
+      const { type, shapeFlag } = n2;
+      switch (type) {
+        case Text:
+          processText(n1, n2, container);
+          break;
+        default:
+          if (shapeFlag & 1 /* ELEMENT */) {
+            processElement(n1, n2, container);
+          }
       }
     };
     const unmount = (vnode) => {
