@@ -16,9 +16,11 @@ export function createRenderer(renderOptions) {
   } = renderOptions
 
   // children[i] 若是字符串，则转换为虚拟DOM；若是虚拟DOM，则不做处理直接返回
+  // Text： Symbol类型值，标识文本类型的虚拟DOM
   const normalize = (children, i) => {
     if (isString(children[i])) {
       let vnode = createVnode(Text, null, children[i])
+      // 处理后进行替换
       children[i] = vnode
     }
     return children[i]
@@ -26,7 +28,7 @@ export function createRenderer(renderOptions) {
 
   // 递归初始化子节点
   // children 中的每一项都是一个虚拟DOM
-  const mountChildren = (container, children) => {
+  const mountChildren = (children, container) => {
     for (let i = 0; i < children.length; i++) {
       // 处理children[i]，将字符转转化为虚拟DOM
       let child = normalize(children, i)
@@ -52,11 +54,23 @@ export function createRenderer(renderOptions) {
       hostSetElementText(el, vnode.children)
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       // children是数组-多个儿子
-      mountChildren(el, vnode.children)
+      mountChildren(vnode.children, el)
     }
 
     // 将el插入到container容器中
     hostInsert(el, container)
+  }
+
+  // 删除所有的子节点
+  const unmountChildren = children => {
+    for (let i = 0; i < children.length; i++) {
+      unmount(children[i])
+    }
+  }
+
+  // 卸载节点
+  const unmount = vnode => {
+    hostRemove(vnode.el)
   }
 
   // 处理文本，初始化文本和patch文本
@@ -85,6 +99,8 @@ export function createRenderer(renderOptions) {
     }
   }
 
+  const patchKeyedChildren = (c1, c2, el) => {}
+
   // 对比属性打补丁
   const patchProps = (oldProps, newProps, el) => {
     for (let key in newProps) {
@@ -98,8 +114,55 @@ export function createRenderer(renderOptions) {
       }
     }
   }
+
+  // 对比子节点打补丁   el: 虚拟节点对应的真实DOM元素
   const patchChildren = (n1, n2, el) => {
-    // 核心Diff算法
+    const c1 = n1.children
+    const c2 = n2.children
+    const prevShapeFlag = n1.shapeFlag // 之前的
+    const shapeFlag = n2.shapeFlag // 之后的
+
+    // 比较两个儿子列表的差异了
+    // 新儿子 旧儿子
+    // 文本  数组 （删除所有子节点，更新文本内容）
+    // 文本  文本 （更新文本内容）
+    // 文本  空   （更新文本内容）
+    // 数组  数组 （diff算法）
+    // 数组  文本 （清空文本，挂载元素）
+    // 数组  空   （挂载元素）
+    // 空    数组 （删除所有子节点）
+    // 空    文本 （清空文本）
+    // 空    空   （不做任何处理）
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 文本	数组	（删除所有子节点，更新文本内容）
+        unmountChildren(c1)
+      }
+      if (c1 !== c2) {
+        // 文本	文本	| 文本 空 （更新文本内容）
+        hostSetElementText(el, c2)
+      }
+    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 数组 数组 （diff算法；全量比对）
+        patchKeyedChildren(c1, c2, el)
+      } else {
+        if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+          // 数组 文本  清空文本，挂载元素）
+          hostSetElementText(el, '')
+        }
+        // 数组 文本 | 数组 空 （清空文本，挂载元素）
+        mountChildren(c2, el)
+      }
+    } else {
+      // 空 数组
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        unmountChildren(c1)
+      } else if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 空 文本
+        hostSetElementText(el, '')
+      }
+    }
   }
 
   // 对比元素打补丁，先复用节点、再比较属性、再比较儿子
@@ -132,11 +195,6 @@ export function createRenderer(renderOptions) {
           processElement(n1, n2, container)
         }
     }
-  }
-
-  // 卸载节点
-  const unmount = vnode => {
-    hostRemove(vnode.el)
   }
 
   const render = (vnode, container) => {

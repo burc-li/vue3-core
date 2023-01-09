@@ -90,7 +90,7 @@ var VueRuntimeDOM = (() => {
       }
       return children[i];
     };
-    const mountChildren = (container, children) => {
+    const mountChildren = (children, container) => {
       for (let i = 0; i < children.length; i++) {
         let child = normalize(children, i);
         patch(null, child, container);
@@ -107,9 +107,17 @@ var VueRuntimeDOM = (() => {
       if (shapeFlag & 8 /* TEXT_CHILDREN */) {
         hostSetElementText(el, vnode.children);
       } else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
-        mountChildren(el, vnode.children);
+        mountChildren(vnode.children, el);
       }
       hostInsert(el, container);
+    };
+    const unmountChildren = (children) => {
+      for (let i = 0; i < children.length; i++) {
+        unmount(children[i]);
+      }
+    };
+    const unmount = (vnode) => {
+      hostRemove(vnode.el);
     };
     const processText = (n1, n2, container) => {
       if (n1 === null) {
@@ -129,6 +137,8 @@ var VueRuntimeDOM = (() => {
         patchElement(n1, n2);
       }
     };
+    const patchKeyedChildren = (c1, c2, el) => {
+    };
     const patchProps = (oldProps, newProps, el) => {
       for (let key in newProps) {
         hostPatchProp(el, key, oldProps[key], newProps[key]);
@@ -140,6 +150,33 @@ var VueRuntimeDOM = (() => {
       }
     };
     const patchChildren = (n1, n2, el) => {
+      const c1 = n1.children;
+      const c2 = n2.children;
+      const prevShapeFlag = n1.shapeFlag;
+      const shapeFlag = n2.shapeFlag;
+      if (shapeFlag & 8 /* TEXT_CHILDREN */) {
+        if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
+          unmountChildren(c1);
+        }
+        if (c1 !== c2) {
+          hostSetElementText(el, c2);
+        }
+      } else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
+        if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
+          patchKeyedChildren(c1, c2, el);
+        } else {
+          if (prevShapeFlag & 8 /* TEXT_CHILDREN */) {
+            hostSetElementText(el, "");
+          }
+          mountChildren(c2, el);
+        }
+      } else {
+        if (prevShapeFlag & 16 /* ARRAY_CHILDREN */) {
+          unmountChildren(c1);
+        } else if (prevShapeFlag & 8 /* TEXT_CHILDREN */) {
+          hostSetElementText(el, "");
+        }
+      }
     };
     const patchElement = (n1, n2) => {
       let el = n2.el = n1.el;
@@ -165,9 +202,6 @@ var VueRuntimeDOM = (() => {
             processElement(n1, n2, container);
           }
       }
-    };
-    const unmount = (vnode) => {
-      hostRemove(vnode.el);
     };
     const render2 = (vnode, container) => {
       if (vnode == null) {

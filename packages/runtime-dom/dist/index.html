@@ -43,12 +43,25 @@
       // render(null, document.getElementById('app'))
 
       // 前后元素不一致
-      render(h(Text, 'hello'), document.getElementById('app'))
+      // // render(h(Text, 'hello'), document.getElementById('app'))
       // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      // setTimeout(() => {
+      //   // render(h('h2', 'hi'), document.getElementById('app'))
+      //   render(h('h3', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+      // }, 1000)
+
+      // 前后元素一致
+      // // render(h(Text, 'hello'), document.getElementById('app'))
+      // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      // setTimeout(() => {
+      //   // render(h(Text, 'hi'), document.getElementById('app'))
+      //   render(h('h1', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+      // }, 1000)
+
+      // 子元素比较
+      render(h('h3', { style: { background: 'red' } }, ['111,', '333']), document.getElementById('app'))
       setTimeout(() => {
-        render(h(Text, 'hi'), document.getElementById('app'))
-        // render(h('h2', 'hi'), document.getElementById('app'))
-        // render(h('h1', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+        render(h('h3', { style: { background: 'red' } }, '222'), document.getElementById('app'))
       }, 1000)
 
       // render(
