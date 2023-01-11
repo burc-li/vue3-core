@@ -100,13 +100,13 @@ export function createRenderer(renderOptions) {
   }
 
   // diff算法；全量比对，比较两个儿子数组的差异
-  const patchKeyedChildren = (c1, c2, el) => {
+  const patchKeyedChildren = (c1, c2, container) => {
     let i = 0
     // 结尾位置
     let e1 = c1.length - 1
     let e2 = c2.length - 1
 
-    // 特殊处理，尽可能减少比对元素
+    // 特殊处理，尽可能减少比对元素************************************
     // sync from start 从头部开始处理 O(n)
     // (a b) c
     // (a b) d e f
@@ -116,7 +116,7 @@ export function createRenderer(renderOptions) {
       const n2 = c2[i]
       // vnode type相同 && key相同
       if (isSameVnode(n1, n2)) {
-        patch(n1, n2, el) // 这样做就是比较两个节点的属性和子节点
+        patch(n1, n2, container) // 这样做就是比较两个节点的属性和子节点
       } else {
         break
       }
@@ -130,7 +130,7 @@ export function createRenderer(renderOptions) {
       const n1 = c1[e1]
       const n2 = c2[e2]
       if (isSameVnode(n1, n2)) {
-        patch(n1, n2, el)
+        patch(n1, n2, container)
       } else {
         break
       }
@@ -150,11 +150,19 @@ export function createRenderer(renderOptions) {
           const nextPos = e2 + 1
           // 根据下一个人的索引来看参照物
           const anchor = nextPos < c2.length ? c2[nextPos].el : null
-          patch(null, c2[i], el, anchor) // 创建新节点 扔到容器中
+          patch(null, c2[i], container, anchor) // 创建新节点 扔到容器中
           i++
         }
       }
-    } else if (i > e2) {
+    }
+
+    // common sequence + unmount 同序列加卸载
+    // i比e2大说明有要卸载的；i到e1之间的就是要卸载的
+    // (a b c) d e
+    // (a b c)
+    // e d (a b c)
+    //     (a b c)
+    else if (i > e2) {
       if (i <= e1) {
         while (i <= e1) {
           unmount(c1[i])
@@ -162,14 +170,49 @@ export function createRenderer(renderOptions) {
         }
       }
     }
-    // common sequence + unmount 同序列加卸载
-    // i比e2大说明有要卸载的；i到e1之间的就是要卸载的
-    // (a b c) d e
-    // (a b c)
-    // e d (a b c)
-    //     (a b c)
 
-    // 乱序对比
+    // 优化完毕************************************
+    // 乱序比对
+    // (a b) 【c d e w】 (f g)
+    // (a b) 【e d c v】 (f g)
+    let s1 = i
+    let s2 = i
+    const keyToNewIndexMap = new Map() // 新节点中 key -> newIndex 的 Map 映射表，子元素中如果存在相同的key 或者 有多个子元素没有key，值会被后面的索引覆盖
+    for (let i = s2; i <= e2; i++) {
+      keyToNewIndexMap.set(c2[i].key, i)
+    }
+    const toBePatched = e2 - s2 + 1 // 新的节点中乱序比对总个数
+    // 一个记录是否比对过的数组映射表，作用：已对比过的节点需移动位置；未对比过的节点需新创建
+    const newIndexToOldIndexMap = new Array(toBePatched).fill(0)
+    // 循环老的乱序节点 看一下新的乱序节点里面有没有，如果有则比较差异，如果没有则要删除老节点
+    for (let i = s1; i <= e1; i++) {
+      const oldChild = c1[i] // 老的节点
+      let newIndex = keyToNewIndexMap.get(oldChild.key) // 用老的节点去新的里面找
+      if (newIndex == undefined) {
+        unmount(oldChild) // 多余老节点删掉
+      } else {
+        // 新的位置对应的老的位置，如果数组里放的值 >0 说明已经pactch过了。+1的目的：防止i为0
+        newIndexToOldIndexMap[newIndex - s2] = i + 1 // 用来标记当前乱序节点索引 对应的 全部老节点的加1后的索引，最长递增子序列会用到
+        patch(oldChild, c2[newIndex], container)
+      }
+    } // 到这只是新老属性和儿子的比对 和 多余老节点卸载操作，没有移动位置
+
+    // 乱序节点需要移动位置，倒序遍历乱序节点
+    for (let i = toBePatched - 1; i >= 0; i--) {
+      let index = i + s2 // i是乱序节点中的index，需要加上s2代表总节点中的index
+      let current = c2[index] // 找到当前节点
+      let anchor = index + 1 < c2.length ? c2[index + 1].el : null
+      if (newIndexToOldIndexMap[i] === 0) {
+        // 创建新元素
+        patch(null, current, container, anchor)
+      } else {
+        console.log('current', current)
+        // 不是0，说明已经执行过patch操作了
+        hostInsert(current.el, container, anchor)
+      }
+      // 目前无论如何都做了一遍倒叙插入，性能浪费，可以根据刚才的数组newIndexToOldIndexMap来减少插入次数
+      // 用最长递增子序列来实现，vue3新增算法，vue2在移动元素的时候则会有性能浪费
+    }
   }
 
   // 对比属性打补丁

@@ -137,7 +137,7 @@ var VueRuntimeDOM = (() => {
         patchElement(n1, n2);
       }
     };
-    const patchKeyedChildren = (c1, c2, el) => {
+    const patchKeyedChildren = (c1, c2, container) => {
       let i = 0;
       let e1 = c1.length - 1;
       let e2 = c2.length - 1;
@@ -145,7 +145,7 @@ var VueRuntimeDOM = (() => {
         const n1 = c1[i];
         const n2 = c2[i];
         if (isSameVnode(n1, n2)) {
-          patch(n1, n2, el);
+          patch(n1, n2, container);
         } else {
           break;
         }
@@ -155,7 +155,7 @@ var VueRuntimeDOM = (() => {
         const n1 = c1[e1];
         const n2 = c2[e2];
         if (isSameVnode(n1, n2)) {
-          patch(n1, n2, el);
+          patch(n1, n2, container);
         } else {
           break;
         }
@@ -167,7 +167,7 @@ var VueRuntimeDOM = (() => {
           while (i <= e2) {
             const nextPos = e2 + 1;
             const anchor = nextPos < c2.length ? c2[nextPos].el : null;
-            patch(null, c2[i], el, anchor);
+            patch(null, c2[i], container, anchor);
             i++;
           }
         }
@@ -177,6 +177,35 @@ var VueRuntimeDOM = (() => {
             unmount(c1[i]);
             i++;
           }
+        }
+      }
+      let s1 = i;
+      let s2 = i;
+      const keyToNewIndexMap = /* @__PURE__ */ new Map();
+      for (let i2 = s2; i2 <= e2; i2++) {
+        keyToNewIndexMap.set(c2[i2].key, i2);
+      }
+      const toBePatched = e2 - s2 + 1;
+      const newIndexToOldIndexMap = new Array(toBePatched).fill(0);
+      for (let i2 = s1; i2 <= e1; i2++) {
+        const oldChild = c1[i2];
+        let newIndex = keyToNewIndexMap.get(oldChild.key);
+        if (newIndex == void 0) {
+          unmount(oldChild);
+        } else {
+          newIndexToOldIndexMap[newIndex - s2] = i2 + 1;
+          patch(oldChild, c2[newIndex], container);
+        }
+      }
+      for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
+        let index = i2 + s2;
+        let current = c2[index];
+        let anchor = index + 1 < c2.length ? c2[index + 1].el : null;
+        if (newIndexToOldIndexMap[i2] === 0) {
+          patch(null, current, container, anchor);
+        } else {
+          console.log("current", current);
+          hostInsert(current.el, container, anchor);
         }
       }
     };
