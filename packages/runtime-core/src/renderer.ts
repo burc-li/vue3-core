@@ -20,7 +20,7 @@ export function createRenderer(renderOptions) {
   const normalize = (children, i) => {
     if (isString(children[i])) {
       let vnode = createVnode(Text, null, children[i])
-      // 处理后进行替换
+      // 处理后进行替换，卸载元素时会用到
       children[i] = vnode
     }
     return children[i]
@@ -37,7 +37,7 @@ export function createRenderer(renderOptions) {
   }
 
   // 初始化DOM
-  const mountElement = (vnode, container) => {
+  const mountElement = (vnode, container, anchor) => {
     const { type, props, shapeFlag } = vnode
     // 创建真实元素，挂载到虚拟节点上
     let el = (vnode.el = hostCreateElement(type))
@@ -58,7 +58,7 @@ export function createRenderer(renderOptions) {
     }
 
     // 将el插入到container容器中
-    hostInsert(el, container)
+    hostInsert(el, container, anchor)
   }
 
   // 删除所有的子节点
@@ -89,17 +89,88 @@ export function createRenderer(renderOptions) {
   }
 
   // 处理元素，初始化元素和patch元素
-  const processElement = (n1, n2, container) => {
+  const processElement = (n1, n2, container, anchor) => {
     if (n1 === null) {
       // 初始化元素
-      mountElement(n2, container)
+      mountElement(n2, container, anchor)
     } else {
       // patch元素
       patchElement(n1, n2)
     }
   }
 
-  const patchKeyedChildren = (c1, c2, el) => {}
+  // diff算法；全量比对，比较两个儿子数组的差异
+  const patchKeyedChildren = (c1, c2, el) => {
+    let i = 0
+    // 结尾位置
+    let e1 = c1.length - 1
+    let e2 = c2.length - 1
+
+    // 特殊处理，尽可能减少比对元素
+    // sync from start 从头部开始处理 O(n)
+    // (a b) c
+    // (a b) d e f
+    while (i <= e1 && i <= e2) {
+      // 有任何一方停止循环则直接跳出
+      const n1 = c1[i]
+      const n2 = c2[i]
+      // vnode type相同 && key相同
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el) // 这样做就是比较两个节点的属性和子节点
+      } else {
+        break
+      }
+      i++
+    }
+
+    // sync from end 从尾部开始处理 O(n)
+    //     a (b c)
+    // d e f (b c)
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1]
+      const n2 = c2[e2]
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el)
+      } else {
+        break
+      }
+      e1--
+      e2--
+    }
+
+    // common sequence + mount 同序列加挂载
+    // i要比e1大说明有新增的；i和e2之间的是新增的部分
+    // (a b)
+    // (a b) c d e
+    //       (b c)
+    // e d f (b c)
+    if (i > e1) {
+      if (i <= e2) {
+        while (i <= e2) {
+          const nextPos = e2 + 1
+          // 根据下一个人的索引来看参照物
+          const anchor = nextPos < c2.length ? c2[nextPos].el : null
+          patch(null, c2[i], el, anchor) // 创建新节点 扔到容器中
+          i++
+        }
+      }
+    } else if (i > e2) {
+      if (i <= e1) {
+        while (i <= e1) {
+          unmount(c1[i])
+          i++
+        }
+      }
+    }
+    // common sequence + unmount 同序列加卸载
+    // i比e2大说明有要卸载的；i到e1之间的就是要卸载的
+    // (a b c) d e
+    // (a b c)
+    // e d (a b c)
+    //     (a b c)
+
+    // 乱序对比
+  }
 
   // 对比属性打补丁
   const patchProps = (oldProps, newProps, el) => {
@@ -176,7 +247,7 @@ export function createRenderer(renderOptions) {
   }
 
   //  核心的patch方法，包括初始化DOM 和 diff算法
-  const patch = (n1, n2, container) => {
+  const patch = (n1, n2, container, anchor = null) => {
     if (n1 == n2) return
 
     // 判断两个元素是否相同，不相同卸载在添加
@@ -192,7 +263,7 @@ export function createRenderer(renderOptions) {
         break
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(n1, n2, container)
+          processElement(n1, n2, container, anchor)
         }
     }
   }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- <script src="../../../node_modules/@vue/runtime-dom/dist//runtime-dom.global.js"></script> -->
+    <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
+    <script src="./runtime-dom.global.js"></script>
+    <script>
+      // let { createRenderer, h, render } = VueRuntimeDOM
+      // let { createRenderer, h, render } = Vue
+      let { createRenderer, h, render, Text } = VueRuntimeDOM
+
+      // 前后元素不一致
+      // // render(h(Text, 'hello'), document.getElementById('app'))
+      // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      // setTimeout(() => {
+      //   // render(h('h2', 'hi'), document.getElementById('app'))
+      //   render(h('h3', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+      // }, 1000)
+
+      // 前后元素一致
+      // // render(h(Text, 'hello'), document.getElementById('app'))
+      // render(h('h1', { style: { color: 'red' } }, 'hello'), document.getElementById('app'))
+      // setTimeout(() => {
+      //   // render(h(Text, 'hi'), document.getElementById('app'))
+      //   render(h('h1', { style: { background: 'red' } }, 'hi'), document.getElementById('app'))
+      // }, 1000)
+
+      // 子元素比较
+      // render(h('h3', { style: { background: 'red' } }, ['111,', '333']), document.getElementById('app'))
+      // setTimeout(() => {
+      //   render(h('h3', { style: { background: 'red' } }, '222'), document.getElementById('app'))
+      // }, 1000)
+    </script>
+  </body>
+</html>
