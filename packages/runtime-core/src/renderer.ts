@@ -171,10 +171,10 @@ export function createRenderer(renderOptions) {
       }
     }
 
-    // 优化完毕************************************
-    // 乱序比对
+    // 优化完毕，尽可能减少乱序比对的节点个数************************************
+    // unknown sequence 乱序比对
     // (a b) 【c d e w】 (f g)
-    // (a b) 【e d c v】 (f g)
+    // (a b) 【e c d v】 (f g)
     let s1 = i
     let s2 = i
     const keyToNewIndexMap = new Map() // 新节点中 key -> newIndex 的 Map 映射表，子元素中如果存在相同的key 或者 有多个子元素没有key，值会被后面的索引覆盖
@@ -206,7 +206,6 @@ export function createRenderer(renderOptions) {
         // 创建新元素
         patch(null, current, container, anchor)
       } else {
-        console.log('current', current)
         // 不是0，说明已经执行过patch操作了
         hostInsert(current.el, container, anchor)
       }

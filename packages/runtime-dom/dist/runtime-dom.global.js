@@ -204,7 +204,6 @@ var VueRuntimeDOM = (() => {
         if (newIndexToOldIndexMap[i2] === 0) {
           patch(null, current, container, anchor);
         } else {
-          console.log("current", current);
           hostInsert(current.el, container, anchor);
         }
       }

@@ -20,7 +20,7 @@
 
       // sync from start : 有key情况，从头部开始比对
       // render(
-      //   h('h1', { style: { background: '#de5e60 } }, [
+      //   h('h1', { style: { background: '#de5e60' } }, [
       //     h('li', { key: 'a' }, 'a'),
       //     h('li', { key: 'b' }, 'b'),
       //     h('li', { key: 'c' }, 'c')
@@ -29,7 +29,7 @@
       // )
       // setTimeout(() => {
       //   render(
-      //     h('h1', { style: { background: '#de5e60 } }, [
+      //     h('h1', { style: { background: '#de5e60' } }, [
       //       h('li', { key: 'a' }, 'a'),
       //       h('li', { key: 'b' }, 'b'),
       //       h('li', { key: 'd' }, 'd'),
@@ -42,12 +42,12 @@
 
       // sync from end : 有key情况，从尾部部开始比对
       // render(
-      //   h('h1', { style: { background: '#de5e60 } }, [h('li', { key: 'a' }, 'a'), h('li', { key: 'b' }, 'b'), h('li', { key: 'c' }, 'c')]),
+      //   h('h1', { style: { background: '#de5e60' } }, [h('li', { key: 'a' }, 'a'), h('li', { key: 'b' }, 'b'), h('li', { key: 'c' }, 'c')]),
       //   app,
       // )
       // setTimeout(() => {
       //   render(
-      //     h('h1', { style: { background: '#de5e60 } }, [
+      //     h('h1', { style: { background: '#de5e60' } }, [
       //       h('li', { key: 'd' }, 'd'),
       //       h('li', { key: 'e' }, 'e'),
       //       h('li', { key: 'f' }, 'f'),
@@ -60,12 +60,13 @@
 
       // common sequence + mount : 同序列加挂载
       // render(
-      //   h('h1', { style: { background: '#de5e60 } }, [h('li', { key: 'a', style: { color: 'green' } }, 'a'), h('li', { key: 'b' }, 'b')]),
+      //   h('h1', { style: { background: '#de5e60' } }, [h('li', { key: 'a', style: { color: 'green' } }, 'a'), h('li', { key: 'b' }, 'b')]),
       //   app,
       // )
+
       // setTimeout(() => {
       //   render(
-      //     h('h1', { style: { background: '#de5e60 } }, [
+      //     h('h1', { style: { background: '#de5e60' } }, [
       //       h('li', { key: 'a' }, 'a'),
       //       h('li', { key: 'b' }, 'b'),
       //       h('li', { key: 'c' }, 'c'),
@@ -78,7 +79,7 @@
 
       // common sequence + unmount : 同序列加卸载
       // render(
-      //   h('h1', { style: { background: '#de5e60 } }, [
+      //   h('h1', { style: { background: '#de5e60' } }, [
       //     h('li', { key: 'a', style: { color: 'green' } }, 'a'),
       //     h('li', { key: 'b' }, 'b'),
       //     h('li', { key: 'c' }, 'c'),
@@ -87,7 +88,7 @@
       //   app,
       // )
       // setTimeout(() => {
-      //   render(h('h1', { style: { background: '#de5e60 } }, [h('li', { key: 'a' }, 'a'), h('li', { key: 'b' }, 'b')]), app)
+      //   render(h('h1', { style: { background: '#de5e60' } }, [h('li', { key: 'a' }, 'a'), h('li', { key: 'b' }, 'b')]), app)
       // }, 1000)
 
       // unknown sequence : 乱序比对

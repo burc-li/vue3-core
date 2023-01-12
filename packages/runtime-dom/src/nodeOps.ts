@@ -4,7 +4,8 @@
 export const nodeOps = {
   // 添加节点
   insert(child, parent, anchor = null) {
-    // insertBefore(newItem,existingItem) 可在已有的子节点前插入一个新的子节点
+    // insertBefore(newNode, referenceNode) 在参考节点之前插入一个拥有指定父节点的子节点
+    // 如果给定的子节点是对文档中现有节点的引用，insertBefore() 会将其从当前位置移动到新位置（在将节点附加到其他节点之前，不需要从其父节点删除该节点）
     parent.insertBefore(child, anchor)
   },
   // 删除节点
