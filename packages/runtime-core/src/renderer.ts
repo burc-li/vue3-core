@@ -71,6 +71,10 @@ export function createRenderer(renderOptions) {
 
   // 卸载节点
   const unmount = vnode => {
+    // 如果是fragment则删除子元素
+    if (vnode.type === Fragment) {
+      return unmountChildren(vnode.children)
+    }
     hostRemove(vnode.el)
   }
 

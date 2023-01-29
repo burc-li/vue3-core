@@ -163,6 +163,9 @@ var VueRuntimeDOM = (() => {
       }
     };
     const unmount = (vnode) => {
+      if (vnode.type === Fragment) {
+        return unmountChildren(vnode.children);
+      }
       hostRemove(vnode.el);
     };
     const processText = (n1, n2, container) => {
