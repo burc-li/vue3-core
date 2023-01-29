@@ -1,5 +1,5 @@
 import { ShapeFlags, isString } from '@vue/shared'
-import { Text, isSameVnode, createVnode } from './vnode'
+import { Text, Fragment, isSameVnode, createVnode } from './vnode'
 import { getSequence } from './sequence'
 
 export function createRenderer(renderOptions) {
@@ -86,6 +86,15 @@ export function createRenderer(renderOptions) {
       if (n1.children !== n2.children) {
         hostSetText(el, n2.children) // 文本的更新
       }
+    }
+  }
+
+  // 处理 Fragment，初始化文本和patch文本
+  const processFragment = (n1, n2, container) => {
+    if (n1 == null) {
+      mountChildren(n2.children, container)
+    } else {
+      patchChildren(n1, n2, container) // 走的是diff算法
     }
   }
 
@@ -321,6 +330,9 @@ export function createRenderer(renderOptions) {
     switch (type) {
       case Text:
         processText(n1, n2, container)
+        break
+      case Fragment: // 无用的标签
+        processFragment(n1, n2, container)
         break
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
