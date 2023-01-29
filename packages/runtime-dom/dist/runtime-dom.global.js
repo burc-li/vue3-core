@@ -70,6 +70,50 @@ var VueRuntimeDOM = (() => {
     return vnode;
   }
 
+  // packages/runtime-core/src/sequence.ts
+  function getSequence(arr) {
+    const len = arr.length;
+    const result = [0];
+    let resultLastIndex;
+    let start;
+    let end;
+    let middle;
+    const p = new Array(len).fill(0);
+    for (let i2 = 0; i2 < len; i2++) {
+      let arrI = arr[i2];
+      if (arrI !== 0) {
+        resultLastIndex = result[result.length - 1];
+        if (arrI > arr[resultLastIndex]) {
+          result.push(i2);
+          p[i2] = resultLastIndex;
+          continue;
+        }
+        start = 0;
+        end = result.length - 1;
+        while (start < end) {
+          middle = (start + end) / 2 | 0;
+          if (arrI > arr[result[middle]]) {
+            start = middle + 1;
+          } else {
+            end = middle;
+          }
+        }
+        if (arrI < arr[result[end]]) {
+          result[end] = i2;
+          p[i2] = result[end - 1];
+        }
+      }
+    }
+    let i = result.length;
+    let last = result[i - 1];
+    while (i > 0) {
+      i--;
+      result[i] = last;
+      last = p[last];
+    }
+    return result;
+  }
+
   // packages/runtime-core/src/renderer.ts
   function createRenderer(renderOptions2) {
     let {
@@ -197,6 +241,8 @@ var VueRuntimeDOM = (() => {
           patch(oldChild, c2[newIndex], container);
         }
       }
+      let increasingNewIndexSequence = getSequence(newIndexToOldIndexMap);
+      let j = increasingNewIndexSequence.length - 1;
       for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
         let index = i2 + s2;
         let current = c2[index];
@@ -204,7 +250,11 @@ var VueRuntimeDOM = (() => {
         if (newIndexToOldIndexMap[i2] === 0) {
           patch(null, current, container, anchor);
         } else {
-          hostInsert(current.el, container, anchor);
+          if (!increasingNewIndexSequence.includes(i2)) {
+            hostInsert(current.el, container, anchor);
+          } else {
+            console.log(">>>>");
+          }
         }
       }
     };

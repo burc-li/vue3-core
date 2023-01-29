@@ -1,5 +1,6 @@
 import { ShapeFlags, isString } from '@vue/shared'
 import { Text, isSameVnode, createVnode } from './vnode'
+import { getSequence } from './sequence'
 
 export function createRenderer(renderOptions) {
   let {
@@ -197,6 +198,10 @@ export function createRenderer(renderOptions) {
       }
     } // 到这只是新老属性和儿子的比对 和 多余老节点卸载操作，没有移动位置
 
+    // 获取最长递增子序列
+    let increasingNewIndexSequence = getSequence(newIndexToOldIndexMap)
+    let j = increasingNewIndexSequence.length - 1
+    // 需要移动位置
     // 乱序节点需要移动位置，倒序遍历乱序节点
     for (let i = toBePatched - 1; i >= 0; i--) {
       let index = i + s2 // i是乱序节点中的index，需要加上s2代表总节点中的index
@@ -206,8 +211,22 @@ export function createRenderer(renderOptions) {
         // 创建新元素
         patch(null, current, container, anchor)
       } else {
-        // 不是0，说明已经执行过patch操作了
-        hostInsert(current.el, container, anchor)
+        if (!increasingNewIndexSequence.includes(i)) {
+          // 不是0，说明已经执行过patch操作了
+          hostInsert(current.el, container, anchor)
+        } else {
+          // 跳过不需要移动的元素， 为了减少移动操作 需要这个最长递增子序列算法
+          console.log('>>>>')
+        }
+
+        // if (i != increasingNewIndexSequence[j]) {
+        //   // 不是0，说明已经执行过patch操作了
+        //   hostInsert(current.el, container, anchor)
+        // } else {
+        //   // 跳过不需要移动的元素， 为了减少移动操作 需要这个最长递增子序列算法
+        //   console.log('>>>>')
+        //   j--
+        // }
       }
       // 目前无论如何都做了一遍倒叙插入，性能浪费，可以根据刚才的数组newIndexToOldIndexMap来减少插入次数
       // 用最长递增子序列来实现，vue3新增算法，vue2在移动元素的时候则会有性能浪费
