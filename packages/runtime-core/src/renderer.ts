@@ -89,7 +89,7 @@ export function createRenderer(renderOptions) {
     }
   }
 
-  // 处理 Fragment，初始化文本和patch文本
+  // 处理 Fragment，初始化Fragment子元素 和 patch Fragment子元素
   const processFragment = (n1, n2, container) => {
     if (n1 == null) {
       mountChildren(n2.children, container)
