@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    info
+  </div>
+  <script>
+    function reactive(target) {
+      // 如果不是对象或数组
+      // 抛出警告，并返回目标对象
+      if (!target || typeof target !== 'object') {
+        console.warn(`value cannot be made reactive: ${String(target)}`)
+        return target
+      }
+      const handler = {
+        get(target, key, receiver) {
+          let result = Reflect.get(target, key, receiver)
+
+          console.log('get', target, key, receiver)
+
+          // 递归创建并返回
+          if (typeof target[key] === 'object' && target[key] !== null) {
+            return reactive(target[key])
+          }
+          return result
+        },
+        set(target, key, value, receiver) {
+          let oldValue = target[key]
+          let result = Reflect.set(target, key, value, receiver)
+          if (oldValue !== value) {}
+          console.log('set', target, key, receiver)
+          return result
+        },
+      }
+      return new Proxy(target, handler)
+    }
+
+    let product = reactive({
+      price: 5,
+      quantity: 2,
+      rate: {
+        value: 0.9
+      }
+    })
+  </script>
+</body>
+
+</html>

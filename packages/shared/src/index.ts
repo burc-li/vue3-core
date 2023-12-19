@@ -14,6 +14,12 @@ export const isFunction = value => {
 export const isArray = Array.isArray
 export const assign = Object.assign
 
+
+export const enum ReactiveFlags {
+  IS_REACTIVE = '__v_isReactive',
+  IS_REF = '__v_isRef',
+}
+
 // vue3提供的形状标识
 // << 左移运算符：各二进制位全部左移若干位，左边丢弃，右边补0
 // |  按位或运算符-或：两位中有一个为1，结果就为1

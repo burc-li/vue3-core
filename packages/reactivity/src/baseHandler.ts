@@ -1,10 +1,7 @@
-import { isObject } from '@vue/shared'
+import { isObject, ReactiveFlags } from '@vue/shared'
 import { reactive } from './reactive'
 import { track, trigger } from './effect'
 
-export const enum ReactiveFlags {
-  IS_REACTIVE = '__v_isReactive',
-}
 export const mutableHandlers = {
   // 这里可以监控到用户取值了
   get(target, key, receiver) {

@@ -55,6 +55,7 @@ var VueReactivity = (() => {
       try {
         this.parent = activeEffect;
         activeEffect = this;
+        console.log("activeEffect", activeEffect);
         cleanupEffect(this);
         return this.fn();
       } finally {
@@ -93,6 +94,7 @@ var VueReactivity = (() => {
     if (activeEffect) {
       let shouldTrack = !dep.has(activeEffect);
       if (shouldTrack) {
+        console.log("trackEffects", activeEffect);
         dep.add(activeEffect);
         activeEffect.deps.push(dep);
       }
@@ -111,6 +113,7 @@ var VueReactivity = (() => {
     effects = new Set(effects);
     effects.forEach((effect2) => {
       if (effect2 !== activeEffect) {
+        console.log("triggerEffects", effect2);
         if (effect2.scheduler) {
           effect2.scheduler();
         } else {
@@ -217,56 +220,19 @@ var VueReactivity = (() => {
     return new ComputedRefImpl(getter, setter);
   };
 
-  // packages/reactivity/src/watch.ts
-  function traversal(value, set = /* @__PURE__ */ new Set()) {
-    if (!isObject(value))
-      return value;
-    if (set.has(value)) {
-      return value;
-    }
-    set.add(value);
-    for (let key in value) {
-      traversal(value[key], set);
-    }
-    return value;
-  }
-  function watch(source, cb, { immediate } = {}) {
-    let getter;
-    if (isReactive(source)) {
-      getter = () => traversal(source);
-    } else if (isFunction(source)) {
-      getter = source;
-    } else {
-      return;
-    }
-    let cleanup;
-    const onCleanup = (fn) => {
-      cleanup = fn;
-    };
-    let oldValue;
-    const scheduler = () => {
-      if (cleanup)
-        cleanup();
-      const newValue = effect2.run();
-      cb(newValue, oldValue, onCleanup);
-      oldValue = newValue;
-    };
-    const effect2 = new ReactiveEffect(getter, scheduler);
-    if (immediate) {
-      scheduler();
-    }
-    oldValue = effect2.run();
-  }
-
   // packages/reactivity/src/ref.ts
+  function isRef(value) {
+    return !!(value && value["__v_isRef" /* IS_REF */]);
+  }
   function toReactive(value) {
     return isObject(value) ? reactive(value) : value;
   }
+  var _a;
   var RefImpl = class {
     constructor(rawValue, _shallow) {
       this.rawValue = rawValue;
       this._shallow = _shallow;
-      this.__v_isRef = true;
+      this[_a] = true;
       this.dep = /* @__PURE__ */ new Set();
       this._value = _shallow ? rawValue : toReactive(rawValue);
     }
@@ -282,6 +248,7 @@ var VueReactivity = (() => {
       }
     }
   };
+  _a = "__v_isRef" /* IS_REF */;
   function ref(value) {
     return new RefImpl(value, false);
   }
@@ -326,6 +293,49 @@ var VueReactivity = (() => {
         }
       }
     });
+  }
+
+  // packages/reactivity/src/watch.ts
+  function traversal(value, set = /* @__PURE__ */ new Set()) {
+    if (!isObject(value))
+      return value;
+    if (set.has(value)) {
+      return value;
+    }
+    set.add(value);
+    for (let key in value) {
+      traversal(value[key], set);
+    }
+    return value;
+  }
+  function watch(source, cb, { immediate } = {}) {
+    let getter;
+    if (isReactive(source)) {
+      getter = () => traversal(source);
+    } else if (isRef(source)) {
+      getter = () => source.value;
+    } else if (isFunction(source)) {
+      getter = source;
+    } else {
+      return;
+    }
+    let cleanup;
+    const onCleanup = (fn) => {
+      cleanup = fn;
+    };
+    let oldValue;
+    const scheduler = () => {
+      if (cleanup)
+        cleanup();
+      const newValue = effect2.run();
+      cb(newValue, oldValue, onCleanup);
+      oldValue = newValue;
+    };
+    const effect2 = new ReactiveEffect(getter, scheduler);
+    if (immediate) {
+      scheduler();
+    }
+    oldValue = effect2.run();
   }
   return __toCommonJS(src_exports);
 })();

@@ -1,6 +1,7 @@
 import { isFunction, isObject } from '@vue/shared'
 import { ReactiveEffect } from './effect'
 import { isReactive } from './reactive'
+import { isRef } from './ref'
 
 // 循环引用示例
 // let b: any = {}
@@ -39,15 +40,17 @@ function traversal(value, set = new Set()) {
 // source 是用户传入的对象, cb 就是对应的回调
 export function watch(source, cb, { immediate } = {} as any) {
   let getter
-
+  
   // @issue2
   // 是响应式数据
   if (isReactive(source)) {
     // 递归循环，只要循环就会访问对象上的每一个属性，访问属性的时候会收集effect
     getter = () => traversal(source)
+  } else if (isRef(source)) {
+    getter = () => source.value
   } else if (isFunction(source)) {
     getter = source
-  } else {
+  }else {
     return
   }
 

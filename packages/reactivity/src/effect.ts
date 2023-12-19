@@ -28,7 +28,7 @@ export class ReactiveEffect {
   // @issue3
   // 这里表示在实例上新增了parent属性，记录父级effect
   public parent = null
-  // 记录effect依赖的属性
+  // 记录effect依赖的属性对应的 dep
   public deps = []
   // 这个effect默认是激活状态
   public active = true
@@ -47,6 +47,7 @@ export class ReactiveEffect {
       // 记录父级effect
       this.parent = activeEffect
       activeEffect = this
+      console.log('activeEffect', activeEffect)
       // 这里我们需要在执行用户函数之前将之前收集的内容清空
       cleanupEffect(this) // @issue6
       // 当稍后调用取值操作的时候 就可以获取到这个全局的activeEffect了
@@ -102,6 +103,7 @@ export function trackEffects(dep) {
   if (activeEffect) {
     let shouldTrack = !dep.has(activeEffect) // 去重了
     if (shouldTrack) {
+      console.log('trackEffects', activeEffect)
       dep.add(activeEffect)
       // @issue4
       // 存放的是属性对应的set
@@ -125,9 +127,11 @@ export function triggerEffects(effects) {
   // 先拷贝，防止死循环，new Set 后产生一个新的Set
   effects = new Set(effects) // @issue7
   effects.forEach(effect => {
-    // 我们在执行effect的时候 又要执行自己，那我们需要屏蔽掉，不要无限调用，【避免由activeEffect触发trigger，再次触发当前effect。 activeEffect -> fn -> set -> trigger -> 当前effect】
+    // 我们在执行effect的时候，有时候会改变属性，那我们需要屏蔽掉，不要无限调用，【避免由activeEffect触发trigger，再次触发当前effect。 activeEffect -> fn -> set -> trigger -> 当前effect】
     // @issue5
     if (effect !== activeEffect) {
+      console.log('triggerEffects', effect)
+
       // @issue8 - scheduler
       if (effect.scheduler) {
         effect.scheduler() // 如果用户传入了调度函数，则执行调度函数
@@ -137,6 +141,7 @@ export function triggerEffects(effects) {
     }
   })
 }
+
 
 // @issue3
 // 解决effect嵌套问题----栈方式------------------------vue2 vue3.0初始版本
@@ -170,12 +175,23 @@ export function triggerEffects(effects) {
 // })
 
 // @issue7
-// let s = new Set([1])
-// s.forEach((item,idx) => {
-//     console.log(item,idx)
-//     s.delete(1)
-//     s.add(1)
-// })
+// 这样就导致死循环了
+// let effect = () => {};
+// let deps = new Set([effect])
+// deps.forEach(item=>{
+//   console.log('>>>')
+//   deps.delete(effect); 
+//   deps.add(effect)
+// }); 
+// 解决方案
+// let effect = () => {};
+// let deps = new Set([effect])
+// const newDeps = new Set(deps) 
+// newDeps.forEach(item=>{
+//   console.log('>>>')
+//   deps.delete(effect); 
+//   deps.add(effect)
+// }); 
 
 // 流程
 // 1) 我们先搞了一个响应式对象 new Proxy

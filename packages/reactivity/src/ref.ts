@@ -1,6 +1,11 @@
-import { isArray, isObject } from '@vue/shared'
+import { isArray, isObject, ReactiveFlags } from '@vue/shared'
 import { trackEffects, triggerEffects } from './effect'
 import { reactive } from './reactive'
+
+// 判断是否是ref对象
+export function isRef(value) {
+  return !!(value && value[ReactiveFlags.IS_REF])
+}
 
 // 如果是对象和数组，则转化为响应式对象
 function toReactive(value) {
@@ -13,7 +18,7 @@ function toReactive(value) {
  */
 class RefImpl {
   // ref标识
-  public __v_isRef = true
+  public [ReactiveFlags.IS_REF] = true
   // 存储effect
   public dep = new Set()
   public _value

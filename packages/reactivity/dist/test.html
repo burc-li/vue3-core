@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+  <!-- <script src="./reactivity.global.js"></script> -->
+  <div id="app">
+    info
+  </div>
+  <script>
+    const {
+      watch,
+      ref,
+      toRefs,
+      reactive
+    } = VueReactivity
+
+    const state = ref({
+      foo: 1,
+      bar: 2
+    })
+
+    const {
+      foo,
+      bar
+    } = state.value
+
+    // 这个 ref 和源属性已经“链接上了”
+    state.value.foo++
+    console.log(foo.value) // 2
+
+    foo.value++
+    console.log(state.value.foo) // 3 
+
+    console.log('state', state.value)
+
+
+    const info = ref(null)
+  </script>
+</body>
+
+</html>

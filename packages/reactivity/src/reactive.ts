@@ -1,5 +1,5 @@
-import { isObject } from '@vue/shared'
-import { mutableHandlers, ReactiveFlags } from './baseHandler'
+import { isObject, ReactiveFlags } from '@vue/shared'
+import { mutableHandlers } from './baseHandler'
 
 // 判断是否是响应式对象
 // 此方法兼容 null undefined string number boolean array object reactive([]) reactive({})所有情况

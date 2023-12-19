@@ -1,43 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <!-- <script src="../../../node_modules/vue/dist//vue.global.js"></script> -->
-    <script src="./reactivity.global.js"></script>
-    <div id="app"></div>
-    <script>
-      // const { watch, reactive } = Vue
-      const { watch, reactive } = VueReactivity
-      const state = reactive({ name: 'burc', address: { num: 1 } })
-      // watch的本质就是effect，内部会对用户填写的数据进行依赖收集
 
-      // 监控对象无法区分前后的新值和老值
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
 
-      // 1.这种方式就是监控数据变化，数据变化了就重新执行
-      // 2.这里可以去监控一个函数，函数的返回值就是老值，更新后获取新值
-      watch(
-        state.address,
-        (newValue, oldValue) => {
-          console.log('>>>_1', newValue, oldValue)
-        },
-        { immediate: true },
-      )
-      watch(
-        () => state.address.num,
-        (newValue, oldValue) => {
-          console.log('>>>_2', newValue, oldValue)
-        },
-        { immediate: true },
-      )
+<body>
+  <!-- <script src="../../../node_modules/vue/dist//vue.global.js"></script> -->
+  <script src="./reactivity.global.js"></script>
+  <div id="app"></div>
+  <script>
+    // const {
+    //   watch,
+    //   ref,
+    //   reactive
+    // } = Vue
+    const {
+      watch,
+      ref,
+      reactive,
+    } = VueReactivity
 
-      setTimeout(() => {
-        state.address.num = 123
-      }, 100)
-    </script>
-  </body>
+    /**
+     * 1. 对象中存在循环引用的情况
+     */
+    // const person = reactive({
+    //   name: '柏成',
+    //   age: 25,
+    //   address: {
+    //     province: '山东省',
+    //     city: '济南市',
+    //   }
+    // })
+    // person.self = person
+
+    // watch(
+    //   person,
+    //   (newValue, oldValue) => {
+    //     console.log('person', newValue, oldValue)
+    //   }, {
+    //     immediate: true
+    //   },
+    // )
+
+    /**
+     * 2. 数据源为 ref 的情况
+     */
+    // const x = ref(1)
+    // watch(
+    //   x,
+    //   (newValue, oldValue) => {
+    //     console.log('x', newValue, oldValue)
+    //   }, {
+    //     immediate: true
+    //   },
+    // )
+    // setTimeout(() => {
+    //   x.value = 2
+    // }, 100)
+
+    /**
+     * 3. 兼容数据源为响应式对象、getter函数的情况
+     */
+    // const person = reactive({
+    //   name: '柏成',
+    //   age: 25,
+    //   address: {
+    //     province: '山东省',
+    //     city: '济南市',
+    //   }
+    // })
+
+    // // person.address 对象本身及其内部每一个属性 都收集了effect。traversal递归遍历
+    // watch(
+    //   person.address,
+    //   (newValue, oldValue) => {
+    //     console.log('person.address', newValue, oldValue)
+    //   }, {
+    //     immediate: true
+    //   },
+    // )
+
+    // // 注意！我们在 watch 源码内部满足了 isFunction 条件
+    // // 此时只有 address 对象本身收集了effect，仅当 address 对象整体被替换时，才会触发回调；
+    // // 其内部属性发生变化并不会触发回调
+    // watch(
+    //   () => person.address,
+    //   (newValue, oldValue) => {
+    //     console.log('person.address', newValue, oldValue)
+    //   }, {
+    //     immediate: true
+    //   },
+    // )
+
+    // // person.address.city 收集了 effect
+    // watch(
+    //   () => person.address.city,
+    //   (newValue, oldValue) => {
+    //     console.log('person.address.city', newValue, oldValue)
+    //   }, {
+    //     immediate: true
+    //   },
+    // )
+
+    // setTimeout(() => {
+    //   person.address.city = '青岛市'
+    // }, 100)
+
+    // watch的本质就是effect，内部会对用户填写的数据进行依赖收集
+    // 监控对象无法区分前后的新值和老值
+
+    // 1.这种方式就是监控数据变化，数据变化了就重新执行
+    // 2.这里可以去监控一个函数，函数的返回值就是老值，更新后获取新值
+  </script>
+</body>
+
 </html>
