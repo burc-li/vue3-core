@@ -237,10 +237,12 @@ var VueReactivity = (() => {
       this._value = _shallow ? rawValue : toReactive(rawValue);
     }
     get value() {
+      console.log("get");
       trackEffects(this.dep);
       return this._value;
     }
     set value(newValue) {
+      console.log("set");
       if (newValue !== this.rawValue) {
         this._value = this._shallow ? newValue : toReactive(newValue);
         this.rawValue = newValue;

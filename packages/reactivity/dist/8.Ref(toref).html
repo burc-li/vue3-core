@@ -1,42 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
-    <script src="./reactivity.global.js"></script>
-    <script>
-      // const { ref, effect, reactive, toRefs, toRef } = Vue // 我们reactive他支持一个对象类型
-      const { ref, effect, reactive, toRefs, toRef } = VueReactivity // 我们reactive他支持一个对象类型
 
-      // 对象
-      const school = reactive({ name: '柏成', age: 18 })
-      // 数组
-      const numbers = reactive([1, 2, 3, 4, 5])
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
 
-      // 解构后丢失响应性的特点
-      // let { name, age } = school
+<body>
+  <div id="app"></div>
+  <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
+  <script src="./reactivity.global.js"></script>
+  <script>
+    // const { ref, effect, reactive, toRefs, toRef } = Vue 
+    const {
+      ref,
+      effect,
+      reactive,
+      toRefs,
+      toRef
+    } = VueReactivity
 
-      let { name, age } = toRefs(school)
-      let [first] = toRefs(numbers)
+    // 对象
+    const person = reactive({
+      name: '柏成',
+      age: 18
+    })
+    // 数组
+    const numbers = reactive([1, 2, 3, 4, 5])
 
-      // let name = toRef(school,'name')
-      // let age = toRef(school,'age')
+    // 直接解构后会丢失响应性的特点
+    // let { name, age } = person
 
-      effect(() => {
-        app.innerHTML = `${name.value}今年${age.value}岁了。第一个数字为${first.value}`
-      })
+    const {
+      name,
+      age
+    } = toRefs(person)
+    const [first] = toRefs(numbers)
 
-      setTimeout(() => {
-        first.value = 2
-        school.age = 32
-        // age.value = 24
-      }, 1000)
-    </script>
-  </body>
+    // let name = toRef(person,'name')
+
+    effect(() => {
+      app.innerHTML = `${name.value}，${age.value}岁。第一个数字为${first.value}。`
+    })
+
+    setTimeout(() => {
+      name.value = '柏成9号'
+      first.value = 999
+    }, 1000)
+  </script>
+</body>
+
 </html>

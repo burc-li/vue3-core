@@ -1,39 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
-    <script src="./reactivity.global.js"></script>
-    <script>
-      // const { ref, effect, computed, reactive } = Vue // 我们reactive他支持一个对象类型
-      const { ref, shallowRef, effect, reactive } = VueReactivity // 我们reactive他支持一个对象类型
 
-      const flag = ref(false)
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
 
-      effect(() => {
-        app.innerHTML = flag.value ? '你好' : '不好'
-      })
+<body>
+  <div id="app"></div>
+  <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
+  <script src="./reactivity.global.js"></script>
+  <script>
+    // const { ref, effect, computed, reactive } = Vue
+    const {
+      ref,
+      shallowRef,
+      effect,
+      reactive
+    } = VueReactivity // 我们reactive他支持一个对象类型
 
-      setTimeout(() => {
-        flag.value = !flag.value
-      }, 1000)
+    /**
+     * 1. Ref
+     **/
+    // const person = ref({
+    //   name: '柏成',
+    //   age: 25,
+    // })
+    // effect(() => {
+    //   app.innerHTML = person.value.name
+    // })
 
-      const state = shallowRef({ count: 1 })
-      effect(() => {
-        app.innerHTML = app.innerHTML + '。数量：' + state.value.count
-      })
-      setTimeout(() => {
-        // 不会触发更改
-        // state.value.count = 2
-        // 会触发更改
-        state.value = { count: 2 }
-      }, 1000)
-    </script>
-  </body>
+    // setTimeout(() => {
+    //   person.value.name = '柏成2号' // 会触发更改
+    // }, 1000)
+
+
+    /**
+     * 2. shallowRef
+     */
+    // const person = shallowRef({
+    //   name: '柏成',
+    //   age: 25,
+    // })
+    // effect(() => {
+    //   app.innerHTML = person.value.name
+    // })
+
+    // setTimeout(() => {
+    //   person.value.name = '柏成2号' // 不会触发更改
+    // }, 1000)
+
+    // setTimeout(() => {
+    //   person.value = {
+    //     name: '柏成9号' // 会触发更改
+    //   }
+    // }, 2000)
+  </script>
+</body>
+
 </html>

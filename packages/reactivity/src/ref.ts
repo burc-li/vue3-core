@@ -27,11 +27,13 @@ class RefImpl {
     this._value = _shallow ? rawValue : toReactive(rawValue)
   }
   get value() {
+    console.log('get')
     // 取值的时候收集依赖
     trackEffects(this.dep)
     return this._value
   }
   set value(newValue) {
+    console.log('set')
     // 新旧值不相等
     if (newValue !== this.rawValue) {
       // @issue1
