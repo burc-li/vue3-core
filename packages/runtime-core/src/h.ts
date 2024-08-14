@@ -1,6 +1,10 @@
 import { isArray, isObject } from '@vue/shared'
 import { createVnode, isVnode } from './vnode'
 
+/**
+ *  h方法主要作用兼容h方法的各种写法，最后调用createVnode方法创建虚拟 DOM 节点 (vnode)
+ */
+
 // 除了 type 外，其他参数都是可选的
 // h('div')
 // h('div', { id: 'foo', style: { color: 'red' } })

@@ -16,8 +16,8 @@ export function isSameVnode(n1, n2) {
 
 // 虚拟节点有很多：组件的、元素的、文本的   h('h1')、h('h1','hello')、h('h1',[h('span')])
 export function createVnode(type, props, children = null) {
-  // 组合方案 shapeFlag  我想知道一个元素中包含的是多个儿子还是一个儿子  标识
-  // 如果type是字符串，则shapeFlag是元素-1，否则shapeFlag默认先置为0
+  // 组合方案，我想知道一个元素中包含的是多个儿子还是一个儿子，利用标识shapeFlag
+  // 如果type是字符串，则shapeFlag置为1，代表是元素；否则shapeFlag默认先置为0
   let shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0
 
   // 虚拟dom就是一个对象，后续diff算法。 真实dom的属性比较多，使用真实DOM对比性能会很差

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node scripts/dev.js reactivity -f global"
+    "devReactive": "node scripts/dev.js reactivity -f global",
+    "dev": "node scripts/dev.js runtime-core -f global"
   },
   "keywords": [],
   "author": "",

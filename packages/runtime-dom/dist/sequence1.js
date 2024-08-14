@@ -3,8 +3,8 @@
 // start@1**************************************************
 // 3 2 8 9 5 6 7 11 15 ->  求最长递增子序列的个数
 
-// 2 8 9 11 15 (不是最长递增子序列)
-// 2 5 6 7 11 15 (最长递增子序列)
+// 2 8 9 11 15 (这一个不是最长递增子序列)
+// 2 5 6 7 11 15 (这个最长递增子序列)
 
 // 找更有潜力的
 // 3
@@ -42,12 +42,11 @@ function getSequence(arr) {
       resultLastIndex = result[result.length - 1]
       if (arrI > arr[resultLastIndex]) { // 比较当前项和最后一项的值，如果大于最后一项，则将当前索引添加到结果集中
         result.push(i) // 记录索引
-        continue
       }
     }
   }
   return result
 }
 
-const res = getSequence([1, 2, 3, 4, 5, 6, 7, 0])
-console.log(res)
+const newIndexToOldIndexMap = [10, 11, 12, 13, 14, 15, 16, 0]
+console.log(getSequence(newIndexToOldIndexMap))
